@@ -2,7 +2,11 @@
 //Author: Ralph Heymsfeld
 //28/06/2018
 //==========================================================================
+//Branch: Heater Test 
+//18/May/2019 T.I Added UART reciveing and PWM output
+//====================================
 //05/05/2019 T.I. Created it for TCP_Amber project 
+
 
 
 #include <math.h>
@@ -69,7 +73,15 @@ float OutputDelta[OutputNodes];
 float ChangeHiddenWeights[InputNodes+1][HiddenNodes];
 float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
 
+
+int PIN_HeatingOutput = 11; //PB7
+int serialIncome= 0;
+
 void setup(){
+
+
+  pinMode(PIN_HeatingOutput, OUTPUT); 
+
   Serial.begin(9600);
   randomSeed(analogRead(3));
   ReportEvery1000 = 1;
@@ -79,6 +91,18 @@ void setup(){
 }  
 
 void loop (){
+  
+    if (Serial.available() > 0)
+    {
+      String RecStr;
+      //Serial.println();
+      serialIncome=Serial.parseInt();
+      Serial.print (serialIncome);
+      analogWrite(PIN_HeatingOutput, serialIncome);
+    }
+
+
+
 
 #if 0 //ANN sample
 
@@ -158,6 +182,4 @@ void toTerminal()
       Serial.print (" ");
     }
   }
-
-
 }
