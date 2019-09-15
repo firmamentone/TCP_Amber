@@ -3,7 +3,8 @@
 //28/06/2018
 //==========================================================================
 //Branch: Heater Test 
-//18/May/2019 T.I Added UART reciveing and PWM output
+//Sep/15/2019 T.I Added FCODE Parser
+//May/18/2019 T.I Added UART reciveing and PWM output
 //====================================
 //05/05/2019 T.I. Created it for TCP_Amber project 
 
@@ -77,11 +78,15 @@ float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
 int PIN_HeatingOutput = 11; //PB7
 int serialIncome= 0;
 
+String FcmdRec[9]; //0:FCODE command  1~8 Receving data
+//String arg0[5];
+
 void setup(){
 
 
   pinMode(PIN_HeatingOutput, OUTPUT); 
-
+  
+  Serial.setTimeout(50);
   Serial.begin(9600);
   randomSeed(analogRead(3));
   ReportEvery1000 = 1;
@@ -95,13 +100,12 @@ void loop (){
     if (Serial.available() > 0)
     {
       String RecStr;
-      //Serial.println();
-      serialIncome=Serial.parseInt();
-      Serial.print (serialIncome);
-      analogWrite(PIN_HeatingOutput, serialIncome);
+      RecStr=Serial.readString();
+      parseCommand(RecStr);
+      
     }
 
-
+    //analogWrite(PIN_HeatingOutput, serialIncome);
 
 
 #if 0 //ANN sample
@@ -182,4 +186,25 @@ void toTerminal()
       Serial.print (" ");
     }
   }
+}
+
+
+
+void parseCommand(String comStr)
+{
+  String cmdRec[9];  
+  cmdRec[0]=comStr.substring(0,4);
+
+  if(cmdRec[0].equals("F101"))
+  {
+
+  }
+  else if(cmdRec[0].equals("F102"))
+  {
+    
+    cmdRec[1]=comStr.substring(comStr.indexOf("Q")+1,comStr.indexOf("Q")+4);
+    Serial.print (cmdRec[1]);
+  }
+  
+  
 }
