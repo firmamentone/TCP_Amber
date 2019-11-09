@@ -3,6 +3,7 @@
 //28/06/2018
 //==========================================================================
 //Branch: Heater Test 
+//Nov/09/2019 T.I Modified parseCommand 
 //Sep/15/2019 T.I Added FCODE Parser
 //May/18/2019 T.I Added UART reciveing and PWM output
 //====================================
@@ -11,6 +12,8 @@
 
 
 #include <math.h>
+
+int ledPin = 13;
 
 /******************************************************************
  * Network Configuration - customized per network 
@@ -78,6 +81,9 @@ float ChangeOutputWeights[HiddenNodes+1][OutputNodes];
 int PIN_HeatingOutput = 11; //PB7
 int serialIncome= 0;
 
+int PIN_THSensor = A0; 
+int THSensorADC = 0 ;
+
 String FcmdRec[9]; //0:FCODE command  1~8 Receving data
 //String arg0[5];
 
@@ -89,6 +95,8 @@ void setup(){
   Serial.setTimeout(50);
   Serial.begin(9600);
   randomSeed(analogRead(3));
+  pinMode(ledPin, OUTPUT);
+
   ReportEvery1000 = 1;
   for( p = 0 ; p < PatternCount ; p++ ) {    
     RandomizedIndex[p] = p ;
@@ -96,6 +104,10 @@ void setup(){
 }  
 
 void loop (){
+    static bool LEDStatus = 0;
+    
+    digitalWrite(ledPin, LEDStatus);
+    LEDStatus = !LEDStatus;
   
     if (Serial.available() > 0)
     {
@@ -105,8 +117,9 @@ void loop (){
       
     }
 
-    //analogWrite(PIN_HeatingOutput, serialIncome);
+    THSensorADC=analogRead(A0);
 
+    analogWrite(PIN_HeatingOutput, serialIncome);
 
 #if 0 //ANN sample
 
@@ -197,13 +210,15 @@ void parseCommand(String comStr)
 
   if(cmdRec[0].equals("F101"))
   {
-
+    cmdRec[1]=THSensorADC;
+    Serial.println(cmdRec[0]+"Q"+cmdRec[1]);
   }
   else if(cmdRec[0].equals("F102"))
   {
     
+    Serial.println (comStr);
     cmdRec[1]=comStr.substring(comStr.indexOf("Q")+1,comStr.indexOf("Q")+4);
-    Serial.print (cmdRec[1]);
+    serialIncome=cmdRec[1].toInt();
   }
   
   
